@@ -1,4 +1,4 @@
-from db import get_available_rooms, room_booking
+from db import get_available_rooms, room_booking, get_bookings, cancel_booking
 
 
 def main():
@@ -6,7 +6,9 @@ def main():
         print("\n==== DK HOTEL ====")
         print("1. View Rooms")
         print("2. Book Room")
-        print("3. Exit")
+        print("3. View Bookings")
+        print("4. Cancel Booking")
+        print("5. Exit")
 
         choice = input("Enter your choice: ")
 
@@ -18,7 +20,12 @@ def main():
 
         elif choice == "2":
             name = input("Enter your name: ")
-            room_id = int(input("Enter room ID: "))
+            try:
+                room_id = int(input("Enter room ID: "))
+            except ValueError:
+                print("Invalid room ID")
+                continue
+
             check_in = input("Enter check in date (YYYY-MM-DD): ")
             check_out = input("Enter check out date (YYYY-MM-DD): ")
 
@@ -30,6 +37,23 @@ def main():
             print(result)
 
         elif choice == "3":
+            bookings = get_bookings()
+
+            for booking in bookings:
+                print(
+                    f"Booking ID: {booking[0]} | Name: {booking[1]} | Room ID: {booking[2]} | Check in: {booking[3]}, | Check out: {booking[4]}")
+
+        elif choice == "4":
+            try:
+                booking_id = int(input("Enter your booking ID to cancel: "))
+            except ValueError:
+                print("Invalid booking ID")
+                continue
+
+            result = cancel_booking(booking_id)
+            print(result)
+
+        elif choice == "5":
             print("Goodbye!")
             break
 
