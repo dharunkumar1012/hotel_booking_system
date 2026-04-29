@@ -1,7 +1,35 @@
-from db import get_available_rooms, room_booking, get_bookings, cancel_booking
+from db import get_available_rooms, room_booking, get_bookings, cancel_booking, login, register
 
 
 def main():
+
+    user_id = None
+
+    while user_id is None:
+        print("\n==== Welcome ====")
+        print("1. Login")
+        print("2. Register")
+
+        choice = input("Choose option: ")
+        if choice == "1":
+            user_name = input("Enter username: ")
+            user_password = input("Enter password: ")
+
+            user_id = login(user_name, user_password)
+
+            if user_id is None:
+                print("Invalid credentials")
+
+        elif choice == "2":
+            user_name = input("Create username: ")
+            user_password = input("Create password: ")
+
+            result = register(user_name, user_password)
+            print(result)
+
+        else:
+            print("Invalid choice")
+
     while True:
         print("\n==== DK HOTEL ====")
         print("1. View Rooms")
@@ -33,15 +61,19 @@ def main():
                 print("\nInvalid date range (check-out must be after check-in)")
                 continue
 
-            result = room_booking(name, room_id, check_in, check_out)
+            result = room_booking(user_id, name, room_id, check_in, check_out)
             print(result)
 
         elif choice == "3":
-            bookings = get_bookings()
+            print("\n==== Your Bookings ====")
+            bookings = get_bookings(user_id)
 
-            for booking in bookings:
-                print(
-                    f"Booking ID: {booking[0]} | Name: {booking[1]} | Room ID: {booking[2]} | Check in: {booking[3]}, | Check out: {booking[4]}")
+            if not bookings:
+                print("No bookings found.")
+            else:
+                for booking in bookings:
+                    print(
+                        f"Booking ID: {booking[0]} | Name: {booking[1]} | Room ID: {booking[2]} | Check in: {booking[3]} | Check out: {booking[4]}")
 
         elif choice == "4":
             try:
@@ -50,7 +82,13 @@ def main():
                 print("Invalid booking ID")
                 continue
 
-            result = cancel_booking(booking_id)
+            confirm = input("Are you sure want to cancel? (yes/no): ").lower()
+
+            if confirm != "yes":
+                print("Cancellation aborted.")
+                continue
+
+            result = cancel_booking(user_id, booking_id)
             print(result)
 
         elif choice == "5":
