@@ -15,6 +15,8 @@ def get_connection():
 
     return connection
 
+# GET AVAILABLE ROOMS
+
 
 def get_available_rooms():
     connection = get_connection()
@@ -28,13 +30,15 @@ def get_available_rooms():
 
     return rooms
 
+# ROOM BOOKING
+
 
 def room_booking(user_id, customer_name, room_id, check_in, check_out):
     connection = get_connection()
     cursor = connection.cursor()
 
     # STEP 1: Check if room exists
-    cursor.execute("SELECT * FROM rooms WHERE room_id = %s", (room_id))
+    cursor.execute("SELECT * FROM rooms WHERE room_id = %s", (room_id,))
     room = cursor.fetchone()
 
     if not room:
@@ -42,10 +46,27 @@ def room_booking(user_id, customer_name, room_id, check_in, check_out):
         connection.close()
         return "\nRoom does not exist"
 
-    # STEP 2: Insert booking (only if valid)
+    # STEP 2: CHECK IF ROOM IS ALREADY BOOKED FOR GIVEN DATES
+
+    cursor.execute(
+        """
+        SELECT * FROM bookings
+        WHERE room_id = %s
+        AND (check_in <= %s AND check_out >= %s)
+      """, (room_id, check_in, check_out)
+    )
+
+    existing = cursor.fetchone()
+
+    if existing:
+        cursor.close()
+        connection.close()
+        return "Room booked for selected dates."
+
+    # STEP 3: Insert booking (only if valid)
     query = """
         INSERT INTO bookings(user_id, customer_name, room_id, check_in, check_out)
-        VALUES(%s, %s, %s, %s)
+        VALUES(%s, %s, %s, %s, %s)
     """
     cursor.execute(query, (user_id, customer_name,
                    room_id, check_in, check_out))
@@ -56,6 +77,8 @@ def room_booking(user_id, customer_name, room_id, check_in, check_out):
     connection.close()
 
     return "Booking Successful!"
+
+# GET BOOKINGS
 
 
 def get_bookings(user_id):
@@ -69,6 +92,8 @@ def get_bookings(user_id):
     connection.close()
 
     return bookings
+
+# CANCEL BOOKING
 
 
 def cancel_booking(user_id, booking_id):
@@ -96,6 +121,8 @@ def cancel_booking(user_id, booking_id):
 
     return "Booking cancelled successfully!"
 
+# LOGIN
+
 
 def login(user_name, user_password):
     connection = get_connection()
@@ -116,26 +143,30 @@ def login(user_name, user_password):
     else:
         return None  # type: ignore
 
+
+# REGISTER
+
 def register(user_name, user_password):
     connection = get_connection()
     cursor = connection.cursor()
-    
+
     # Check if the user_name exists
-    cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_name,))
-    
+    cursor.execute("SELECT * FROM users WHERE user_name = %s", (user_name,))
+
     user = cursor.fetchone()
-    
+
     if user:
         cursor.close()
         connection.close()
         return "User already exists"
-    
+
     # Insert new user
-    cursor.execute("Insert INTO users(user_name, user_password) VALUES(%s, %s),", (user_name, user_password))
-    
+    cursor.execute(
+        "Insert INTO users(user_name, user_password) VALUES(%s, %s)", (user_name, user_password))
+
     connection.commit()
-    
+
     cursor.close()
     connection.close()
-    
+
     return "User registered successfully!"
