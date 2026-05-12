@@ -1,6 +1,6 @@
 from flask import Flask, redirect, request
 
-from db import login, register
+from db import login, register, get_available_rooms, room_booking
 
 app = Flask(__name__)
 
@@ -62,6 +62,76 @@ def dashboard():
         <a href="/book">Book Room</a><br><br>
         <a href="/bookings">View Bookings</a><br><br>
         <a href="/cancel">Cancel Booking</a><br><br>
+"""
+
+
+@app.route("/rooms")
+def view_rooms():
+    rooms = get_available_rooms()
+    output = "<h2>Available Rooms</h2>"
+
+    for room in rooms:  # type: ignore
+        output += f"""
+            <p>
+            Room ID: {room[0]}<br>
+            Type: {room[1]}<br>
+            Capacity: {room[2]}<br>
+            Price: ₹{room[3]}
+            </p>
+            <hr>
+        """
+
+    output += '<a href="/dashboard">Back to Dashboard</a>'
+    return output
+
+
+@app.route("/book", methods=["GET", "POST"])
+def book_room():
+    if request.method == "POST":
+        customer_name = request.form["customer_name"]
+        room_id = int(request.form["room_id"])
+        check_in = request.form["check_in"]
+        check_out = request.form["check_out"]
+
+        user_id = 1
+        result = room_booking(
+            user_id,
+            customer_name,
+            room_id,
+            check_in,
+            check_out
+        )
+
+        return f"""
+            <h3>{result}</h3>
+
+            <a href="/book">Book Another Room</a><br><br>
+            <a href="/dashboard">Back to Dashboard</a>
+        """
+
+    return """
+         <h2>Book Room</h2>
+
+        <form method="POST">
+
+            Name:
+            <input type="text" name="customer_name"><br><br>
+
+            Room ID:
+            <input type="number" name="room_id"><br><br>
+
+            Check In:
+            <input type="date" name="check_in"><br><br>
+
+            Check Out:
+            <input type="date" name="check_out"><br><br>
+
+            <button type="submit">Book Room</button>
+
+        </form>
+
+        <br>
+        <a href="/dashboard">Back to Dashboard</a>
 """
 
 
