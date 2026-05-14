@@ -102,18 +102,21 @@ def cancel_booking(user_id, booking_id):
 
     # Step 1: Check if booking exists
     cursor.execute(
-        "SELECT * FROM bookings WHERE booking_id = %s AND user_id = %s", (booking_id, user_id))
+        "SELECT * FROM bookings WHERE booking_id = %s",
+        (booking_id,)
+    )
+
     booking = cursor.fetchone()
 
     if not booking:
         cursor.close()
         connection.close()
-        return "\nBooking not found or not authorized."
+        return "\nBooking not found."
 
-    # Step 2: Delete booking:
-
+    # Step 2: Delete booking
     query = "DELETE FROM bookings WHERE booking_id = %s"
     cursor.execute(query, (booking_id,))
+
     connection.commit()
 
     cursor.close()

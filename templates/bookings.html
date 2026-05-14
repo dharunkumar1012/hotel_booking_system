@@ -1,0 +1,25 @@
+<h2>My Bookings</h2>
+
+{% if not bookings %}
+
+    <p>No bookings found.</p>
+
+{% else %}
+
+    {% for booking in bookings %}
+
+        <p>
+            Booking ID: {{ booking[0] }}<br>
+            Name: {{ booking[1] }}<br>
+            Room ID: {{ booking[2] }}<br>
+            Check In: {{ booking[3] }}<br>
+            Check Out: {{ booking[4] }}
+        </p>
+
+        <hr>
+
+    {% endfor %}
+
+{% endif %}
+
+<a href="/dashboard">Back to Dashboard</a>

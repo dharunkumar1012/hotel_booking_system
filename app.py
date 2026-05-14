@@ -1,6 +1,6 @@
-from flask import Flask, redirect, request
+from flask import Flask, redirect, render_template, request
 
-from db import login, register, get_available_rooms, room_booking
+from db import login, register, get_available_rooms, room_booking, get_bookings, cancel_booking
 
 app = Flask(__name__)
 
@@ -18,17 +18,7 @@ def home():
         else:
             return "Invalid credentials"
 
-    return """
-        <h2>Login</h2>
-        <form method="POST">
-            Username: <input type="text" name="username"><br><br>
-            Password: <input type="password" name="password"><br><br>
-            <button type="submit">Login</button>
-        </form>
-        
-        <br>
-        <a href="/register">Create new account</a>
-    """
+    return render_template("login.html")
 
 
 @app.route("/register", methods=["GET", "POST"])  # type: ignore
@@ -40,49 +30,23 @@ def register_page():
         result = register(username, password)
         return result
 
-    return """
-         <h2>Register</h2>
-        <form method="POST">
-            Username: <input type="text" name="username"><br><br>
-            Password: <input type="password" name="password"><br><br>
-            <button type="submit">Register</button>
-        </form>
-
-        <br>
-        <a href="/">Back to login</a>
-"""
+    return render_template("register.html")
 
 
 @app.route("/dashboard")
 def dashboard():
-    return """
-         <h2>DK HOTEL</h2>
-
-        <a href="/rooms">View Rooms</a><br><br>
-        <a href="/book">Book Room</a><br><br>
-        <a href="/bookings">View Bookings</a><br><br>
-        <a href="/cancel">Cancel Booking</a><br><br>
-"""
+    return render_template("dashboard.html")
 
 
 @app.route("/rooms")
 def view_rooms():
+
     rooms = get_available_rooms()
-    output = "<h2>Available Rooms</h2>"
 
-    for room in rooms:  # type: ignore
-        output += f"""
-            <p>
-            Room ID: {room[0]}<br>
-            Type: {room[1]}<br>
-            Capacity: {room[2]}<br>
-            Price: ₹{room[3]}
-            </p>
-            <hr>
-        """
-
-    output += '<a href="/dashboard">Back to Dashboard</a>'
-    return output
+    return render_template(
+        "rooms.html",
+        rooms=rooms
+    )
 
 
 @app.route("/book", methods=["GET", "POST"])
@@ -109,30 +73,40 @@ def book_room():
             <a href="/dashboard">Back to Dashboard</a>
         """
 
-    return """
-         <h2>Book Room</h2>
+    return render_template("book.html")
 
-        <form method="POST">
 
-            Name:
-            <input type="text" name="customer_name"><br><br>
+@app.route("/bookings")
+def view_bookings():
 
-            Room ID:
-            <input type="number" name="room_id"><br><br>
+    user_id = 1
 
-            Check In:
-            <input type="date" name="check_in"><br><br>
+    bookings = get_bookings(user_id)
 
-            Check Out:
-            <input type="date" name="check_out"><br><br>
+    return render_template(
+        "bookings.html",
+        bookings=bookings
+    )
 
-            <button type="submit">Book Room</button>
 
-        </form>
+@app.route("/cancel", methods=["GET", "POST"])
+def cancel_room():
+    if request.method == "POST":
+        booking_id = int(request.form["booking_id"])
 
-        <br>
-        <a href="/dashboard">Back to Dashboard</a>
-"""
+        # Temporary user_id
+        user_id = 1
+
+        result = cancel_booking(user_id, booking_id)
+
+        return f"""
+            <h3>{result}</h3>
+
+            <a href="/cancel">Cancel Another Booking</a><br><br>
+            <a href="/dashboard">Back to Dashboard</a>
+        """
+
+    return render_template("cancel.html")
 
 
 if __name__ == "__main__":

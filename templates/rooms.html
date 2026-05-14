@@ -1,0 +1,16 @@
+<h2>Available Rooms</h2>
+
+{% for room in rooms %}
+
+    <p>
+        Room ID: {{ room[0] }}<br>
+        Type: {{ room[1] }}<br>
+        Capacity: {{ room[2] }}<br>
+        Price: ₹{{ room[3] }}
+    </p>
+
+    <hr>
+
+{% endfor %}
+
+<a href="/dashboard">Back to Dashboard</a>
